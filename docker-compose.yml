@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  php-apache-environment:
+    container_name: php-apache
+    environment:
+      - PHP_INI_SCAN_DIR=:/usr/local/etc/php/conf.d/addconf
+    build:
+      context: ./build/php
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - mysql
+    volumes:
+      - ${WEBROOT}:/var/www/html/
+      - ./conf/php/:/usr/local/etc/php/conf.d/addconf
+    ports: 
+      - "$HTTP:80"
+  mysql:
+    image: mysql
+    user: ${USERID}:${GROUPID}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DBRPW}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${DBUSER}
+      MYSQL_PASSWORD: ${DBUPW}
+      TZ: ${TIMEZONE}
+    restart: always
+    volumes:
+      - ${DBINIT}:/docker-entrypoint-initdb.d
+      - ${DBDATA}:/var/lib/mysql
+      - ./conf/mysql:/etc/mysql/conf.d
+      - ./scripts:/scripts
+    ports:
+      - "$SQL:3306"
